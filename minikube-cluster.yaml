@@ -1,0 +1,112 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: rabbitmq-operator
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  image: rabbitmq:3.11.2-management
+  replicas: 3
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
+  service:
+    annotations:
+      cloud.google.com/neg: '{"ingress": true}'
+      cloud.google.com/backend-config: '{"ports": {"15672": "rabbitmq-operator"}}'
+  rabbitmq:
+    additionalPlugins:
+      - rabbitmq_top
+      - rabbitmq_shovel
+      - rabbitmq_shovel_management
+      - rabbitmq_delayed_message_exchange
+    additionalConfig: |
+      total_memory_available_override_value = 512MB
+      vm_memory_high_watermark_paging_ratio = 0.5
+      vm_memory_high_watermark.relative = 0.8
+      disk_free_limit.relative = 1.0
+      mirroring_sync_batch_size = 2048
+      queue_master_locator = min-masters
+      cluster_partition_handling = autoheal
+      log.console.level = info
+      # default_user=admin - Do not set these to avoid authentication issues with the messaging topology operator. See link below
+      # default_pass=pass - Known issue: https://groups.google.com/g/rabbitmq-users/c/PGLdlHq-kU8
+    envConfig: |
+      PLUGINS_DIR=/opt/rabbitmq/plugins:/opt/rabbitmq/custom-plugins
+  override:
+    service:
+      spec:
+        ports:
+          - name: amqproxy
+            protocol: TCP
+            port: 5673
+            targetPort: 5673
+    statefulSet:
+      spec:
+        template:
+          metadata:
+            annotations:
+              ad.datadoghq.com/rabbitmq.logs: '[{"source": "rabbitmq", "service": "rabbitmq", "log_processing_rules": [{"type":"multi_line","name":"logs_starts_with_equal_sign", "pattern": "="}]}]'
+              ad.datadoghq.com/rabbitmq.check_names: '["rabbitmq"]'
+              ad.datadoghq.com/rabbitmq.init_configs: "[{}]"
+              ad.datadoghq.com/rabbitmq.instances: '[{"rabbitmq_api_url":"http://rabbitmq-operator:15672/api/","username":"datadog","password":"pass"}]'
+              # ad.datadoghq.com/rabbitmq.instances: '[{"rabbitmq_api_url":"http://rabbitmq-operator.rabbitmq:443/api/","username":"datadog","password":"pass"}]'
+          spec:
+            containers:
+              - name: amqproxy
+                image: cloudamqp/amqproxy:v0.5.11
+                imagePullPolicy: "IfNotPresent"
+                command: ["/amqproxy"]
+                args: ["-l", "0.0.0.0", "-p", "5673", "amqp://127.0.0.1:5672"]
+                resources:
+                  requests:
+                    cpu: 250m
+                    memory: 256Mi
+                  limits:
+                    cpu: 500m
+                    memory: 512Mi
+                readinessProbe:
+                  tcpSocket:
+                    port: 5673
+                  initialDelaySeconds: 0
+                  timeoutSeconds: 1
+                  periodSeconds: 10
+                livenessProbe:
+                  tcpSocket:
+                    port: 5673
+                  initialDelaySeconds: 0
+                  timeoutSeconds: 1
+                  periodSeconds: 30
+                ports:
+                  - name: amqproxy
+                    containerPort: 5673
+              - name: rabbitmq
+                volumeMounts:
+                  - mountPath: /opt/rabbitmq/custom-plugins
+                    name: plugins
+            volumes:
+              - name: plugins
+                emptyDir: {}
+            initContainers:
+              - command:
+                  - sh
+                  - -c
+                  - curl -L -v https://github.com/rabbitmq/rabbitmq-delayed-message-exchange/releases/download/3.11.1/rabbitmq_delayed_message_exchange-3.11.1.ez --output /custom-plugins/rabbitmq_delayed_message_exchange-3.11.1.ez
+                image: curlimages/curl:7.86.0
+                imagePullPolicy: IfNotPresent
+                name: fetch-custom-plugins
+                resources:
+                  limits:
+                    cpu: 100m
+                    memory: 500Mi
+                  requests:
+                    cpu: 100m
+                    memory: 500Mi
+                terminationMessagePolicy: FallbackToLogsOnError
+                volumeMounts:
+                  - mountPath: /custom-plugins/
+                    name: plugins

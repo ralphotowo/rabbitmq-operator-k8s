@@ -1,0 +1,18 @@
+targetSystem: "linux"
+datadog:
+  env:
+   - name: DD_KUBELET_TLS_VERIFY
+     value: "false"
+  logs:
+    enabled: true
+    containerCollectAll: true
+  apiKey: 'revoked5a26db496|913c4ba2de4fdd8dc41d18' # Do not commit
+  site: 'datadoghq.com'
+  kubelet:
+    tlsVerify: false
+
+# helm install data-dog -f datadog-values.yaml datadog/datadog
+# https://github.com/DataDog/helm-charts/blob/main/examples/datadog/agent_on_openshift_values.yaml
+# https://github.com/DataDog/helm-charts/blob/main/examples/datadog/agent_with_cluster_agent_values.yaml
+# https://docs.datadoghq.com/containers/kubernetes/apm/?tab=helm
+

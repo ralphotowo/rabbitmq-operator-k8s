@@ -1,0 +1,16 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: Policy
+metadata:
+  name: high-availability
+spec:
+  name: ha
+  vhost: "/" 
+  pattern: "^(?!amq\\.).*"
+  applyTo: "queues"
+  priority: 1
+  definition: 
+    ha-mode: "exactly"
+    ha-sync-mode: "automatic"
+    ha-params: 2
+  rabbitmqClusterReference:
+    name: rabbitmq-operator
