@@ -54,8 +54,8 @@ spec:
               ad.datadoghq.com/rabbitmq.check_names: '["rabbitmq"]'
               ad.datadoghq.com/rabbitmq.init_configs: "[{}]"
               ad.datadoghq.com/rabbitmq.instances: '[{"rabbitmq_api_url":"http://rabbitmq-operator:15672/api/","username":"datadog","password":"godatad"}]'
-          # spec:
-          #   containers:
+          spec:
+            containers:
           #     - name: amqproxy
           #       image: cloudamqp/amqproxy:v0.5.11
           #       imagePullPolicy: "IfNotPresent"
