@@ -54,58 +54,58 @@ spec:
               ad.datadoghq.com/rabbitmq.check_names: '["rabbitmq"]'
               ad.datadoghq.com/rabbitmq.init_configs: "[{}]"
               ad.datadoghq.com/rabbitmq.instances: '[{"rabbitmq_api_url":"http://rabbitmq-operator:15672/api/","username":"datadog","password":"godatad"}]'
-          spec:
-            containers:
-              - name: amqproxy
-                image: cloudamqp/amqproxy:0.5.4
-                imagePullPolicy: "IfNotPresent"
-                command: ["/amqproxy"]
-                args: ["-l", "0.0.0.0", "-p", "5673", "amqp://127.0.0.1:5672"]
+          # spec:
+          #   containers:
+          #     - name: amqproxy
+          #       image: cloudamqp/amqproxy:v0.5.11
+          #       imagePullPolicy: "IfNotPresent"
+          #       command: ["/amqproxy"]
+          #       args: ["-l", "0.0.0.0", "-p", "5673", "amqp://127.0.0.1:5672"]
+          #       resources:
+          #         requests:
+          #           cpu: 250m
+          #           memory: 256Mi
+          #         limits:
+          #           cpu: 500m
+          #           memory: 512Mi
+          #       readinessProbe:
+          #         tcpSocket:
+          #           port: 5673
+          #         initialDelaySeconds: 0
+          #         timeoutSeconds: 1
+          #         periodSeconds: 10
+          #       livenessProbe:
+          #         tcpSocket:
+          #           port: 5673
+          #         initialDelaySeconds: 0
+          #         timeoutSeconds: 1
+          #         periodSeconds: 30
+          #       ports:
+          #         - name: amqproxy
+          #           containerPort: 5673
+              - name: rabbitmq
+                volumeMounts:
+                  - mountPath: /opt/rabbitmq/custom-plugins
+                    name: plugins
+            volumes:
+              - name: plugins
+                emptyDir: {}
+            initContainers:
+              - command:
+                  - sh
+                  - -c
+                  - curl -L -v https://github.com/rabbitmq/rabbitmq-delayed-message-exchange/releases/download/3.11.1/rabbitmq_delayed_message_exchange-3.11.1.ez --output /custom-plugins/rabbitmq_delayed_message_exchange-3.11.1.ez
+                image: curlimages/curl:7.86.0
+                imagePullPolicy: IfNotPresent
+                name: fetch-custom-plugins
                 resources:
-                  requests:
-                    cpu: 250m
-                    memory: 256Mi
                   limits:
-                    cpu: 500m
-                    memory: 512Mi
-                readinessProbe:
-                  tcpSocket:
-                    port: 5673
-                  initialDelaySeconds: 0
-                  timeoutSeconds: 1
-                  periodSeconds: 10
-                livenessProbe:
-                  tcpSocket:
-                    port: 5673
-                  initialDelaySeconds: 0
-                  timeoutSeconds: 1
-                  periodSeconds: 30
-                ports:
-                  - name: amqproxy
-                    containerPort: 5673
-  #             - name: rabbitmq
-  #               volumeMounts:
-  #                 - mountPath: /opt/rabbitmq/custom-plugins
-  #                   name: plugins
-  #           volumes:
-  #             - name: plugins
-  #               emptyDir: {}
-  #           initContainers:
-  #             - command:
-  #                 - sh
-  #                 - -c
-  #                 - curl -L -v https://github.com/rabbitmq/rabbitmq-delayed-message-exchange/releases/download/3.11.1/rabbitmq_delayed_message_exchange-3.11.1.ez --output /custom-plugins/rabbitmq_delayed_message_exchange-3.11.1.ez
-  #               image: curlimages/curl:7.86.0
-  #               imagePullPolicy: IfNotPresent
-  #               name: fetch-custom-plugins
-  #               resources:
-  #                 limits:
-  #                   cpu: 100m
-  #                   memory: 500Mi
-  #                 requests:
-  #                   cpu: 100m
-  #                   memory: 500Mi
-  #               terminationMessagePolicy: FallbackToLogsOnError
-  #               volumeMounts:
-  #                 - mountPath: /custom-plugins/
-  #                   name: plugins
+                    cpu: 100m
+                    memory: 500Mi
+                  requests:
+                    cpu: 100m
+                    memory: 500Mi
+                terminationMessagePolicy: FallbackToLogsOnError
+                volumeMounts:
+                  - mountPath: /custom-plugins/
+                    name: plugins
