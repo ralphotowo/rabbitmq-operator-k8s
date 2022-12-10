@@ -14,10 +14,10 @@ spec:
     limits:
       cpu: 200m
       memory: 512Mi
-  service:
-    annotations:
-      cloud.google.com/neg: '{"ingress": true}'
-      cloud.google.com/backend-config: '{"ports": {"15672": "rabbitmq-operator"}}'
+  # service:
+  #   annotations:
+  #     cloud.google.com/neg: '{"ingress": true}'
+  #     cloud.google.com/backend-config: '{"ports": {"15672": "rabbitmq-operator"}}'
   rabbitmq:
     additionalPlugins:
       - rabbitmq_top
