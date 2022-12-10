@@ -7,7 +7,7 @@ spec:
   containers:
   - image: pivotalrabbitmq/perf-test:latest
     name: rabbitmq-perftest
-    args: ["--uri", "amqp://default_user_k0QLnfYOnMnBipL4bFQ:B_XIlOGr8ZeNEiUCYN3Di2JNTnYolanM@rabbitmq-operator:5673", "--queue", "seven", "--autoack", "--producers", "2", "--consumers", "1", "--size", "100", "--rate", "1000", "--consumer-rate", "500"]
+    args: ["--uri", "amqp://default_user_k0QLnfYOnMnBipL4bFQ:B_XIlOGr8ZeNEiUCYN3Di2JNTnYolanM@rabbitmq-operator:5673", "--queue", "seven", "--autoack", "--producers", "2", "--consumers", "1", "--size", "100", "--rate", "1000", "--consumer-rate", "200"]
     resources:
       requests:
         cpu: 100m
