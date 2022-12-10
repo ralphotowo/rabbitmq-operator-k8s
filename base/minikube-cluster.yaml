@@ -57,7 +57,7 @@ spec:
           spec:
             containers:
               - name: amqproxy
-                image: cloudamqp/amqproxy:v0.5.11
+                image: cloudamqp/amqproxy:0.5.4
                 imagePullPolicy: "IfNotPresent"
                 command: ["/amqproxy"]
                 args: ["-l", "0.0.0.0", "-p", "5673", "amqp://127.0.0.1:5672"]
