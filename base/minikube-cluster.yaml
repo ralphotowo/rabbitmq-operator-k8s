@@ -35,16 +35,16 @@ spec:
       log.console.level = info
       # default_user=admin - Do not set these to avoid authentication issues with the messaging topology operator. See link below
       # default_pass=pass - Known issue: https://groups.google.com/g/rabbitmq-users/c/PGLdlHq-kU8
-  #   envConfig: |
-  #     PLUGINS_DIR=/opt/rabbitmq/plugins:/opt/rabbitmq/custom-plugins
-  # override:
-  #   service:
-  #     spec:
-  #       ports:
-  #         - name: amqproxy
-  #           protocol: TCP
-  #           port: 5673
-  #           targetPort: 5673
+    envConfig: |
+      PLUGINS_DIR=/opt/rabbitmq/plugins:/opt/rabbitmq/custom-plugins
+  override:
+    service:
+      spec:
+        ports:
+          - name: amqproxy
+            protocol: TCP
+            port: 5673
+            targetPort: 5673
   #   statefulSet:
   #     spec:
   #       template:
